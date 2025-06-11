@@ -5,6 +5,9 @@ This is a personal project where I'm building a basic Tetris clone using HTML, C
 > 🔄 The project is currently under development. So far, it contains the initial structure and basic logic.
 
 ## 📁 Current Structure
+## 📁 Current Structure
+
+```
 Tetris/
 ├── index.html
 ├── style.css
@@ -13,6 +16,8 @@ Tetris/
     ├── grid.js
     ├── main.js
     └── tetromino.js
+```
+
 
 ## ✅ Goal
 
