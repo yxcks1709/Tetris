@@ -9,10 +9,10 @@ Tetris/
 ├── index.html
 ├── style.css
 └── scripts/
-├── boardTetris.js
-├── grid.js
-├── main.js
-└── tetromino.js
+    ├── boardTetris.js
+    ├── grid.js
+    ├── main.js
+    └── tetromino.js
 
 ## ✅ Goal
 
