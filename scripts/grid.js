@@ -1,3 +1,5 @@
+import { Tetromino } from "/scripts/tetromino.js";
+
 export class Grid{
     constructor(canvas, rows, cols, cellSize, space){
         this.canvas = canvas;
@@ -11,6 +13,8 @@ export class Grid{
 
         this.canvas.width = this.cols * this.cellSize + (this.space*this.cols);
         this.canvas.height = this.rows * this.cellSize + (this.space*this.rows);
+
+        this.block = new Tetromino(this.canvas, this.cellSize);
     }
     restartMatriz(){
         for(let r = 0; r < this.rows; r++){
@@ -38,6 +42,13 @@ export class Grid{
             for(let c = 0; c < this.cols; c++){
                 const position = this.getCoordinates(c,r);
                 this.drawSquere(position.x, position.y, this.cellSize, "#000", "#303030")
+
+                if(this.matriz[r][c] !==0){
+                    this.block.drawBlock(position.x,position.y,this.matriz[r][c]);
+                }
+                else{
+                    this.drawSquere(position.x,position.y,this.cellSize,"#000","#303030");
+                }
             }
         }
         this.printMatriz();

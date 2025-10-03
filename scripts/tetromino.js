@@ -1,11 +1,11 @@
-class Position{
-    constructor(row, column){
+class Position {
+    constructor(row, column) {
         this.row = row;
         this.column = column;
     }
 }
-class Tetromino{
-    constructor(canvas, cellSize, shapes, initPosition, id){
+class Tetromino {
+    constructor(canvas, cellSize, shapes = [], initPosition = new Position(), id=1) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.cellSize = cellSize;
@@ -15,101 +15,101 @@ class Tetromino{
         this.position = new Position(this.initPosition.row, this.initPosition.column);
         this.id = id;
     }
-    drawSquare(x,y,size,color){
+    drawSquare(x, y, size, color) {
         this.ctx.fillStyle = color;
-        this.ctx.fillRect(x,y,size,size);
+        this.ctx.fillRect(x, y, size, size);
     }
-    drawTriangle(x1,y1,x2,y2,x3,y3,color){
+    drawTriangle(x1, y1, x2, y2, x3, y3, color) {
         this.ctx.beginPath();
-        this.ctx.moveTo(x1,y1);
-        this.ctx.lineTo(x2,y2);
-        this.ctx.lineTo(x3,y3);
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.lineTo(x3, y3);
         this.ctx.closePath();
         this.ctx.fillStyle = color;
         this.ctx.fill();
     }
-    getColorPalette(id){
+    getColorPalette(id) {
         const palette = {
-            1:{
-                rightTriangle : "#B5193B",
-                leftTriangle : "#FFFFFF",
-                square : "#EE1B2E"
+            1: {
+                rightTriangle: "#B5193B",
+                leftTriangle: "#FFFFFF",
+                square: "#EE1B2E"
             },
-            2:{
-                rightTriangle : "#FE5E02",
-                leftTriangle : "#FFFFFF",
-                square : "#FE8602"
+            2: {
+                rightTriangle: "#FE5E02",
+                leftTriangle: "#FFFFFF",
+                square: "#FE8602"
             },
-            3:{
-                rightTriangle : "#FE8601",
-                leftTriangle : "#FFFFFF",
-                square : "#FFDB01"
+            3: {
+                rightTriangle: "#FE8601",
+                leftTriangle: "#FFFFFF",
+                square: "#FFDB01"
             },
-            4:{
-                rightTriangle : "#22974C",
-                leftTriangle : "#FFFFFF",
-                square : "#24DC4F"
+            4: {
+                rightTriangle: "#22974C",
+                leftTriangle: "#FFFFFF",
+                square: "#24DC4F"
             },
-            5:{
-                rightTriangle : "#49BDFF",
-                leftTriangle : "#FFFFFF",
-                square : "#2D97F7"
+            5: {
+                rightTriangle: "#49BDFF",
+                leftTriangle: "#FFFFFF",
+                square: "#2D97F7"
             },
-            6:{
-                rightTriangle : "#0000C9",
-                leftTriangle : "#FFFFFF",
-                square : "#0101F0"
+            6: {
+                rightTriangle: "#0000C9",
+                leftTriangle: "#FFFFFF",
+                square: "#0101F0"
             },
-            7:{
-                rightTriangle : "#8500D3",
-                leftTriangle : "#FFFFFF",
-                square : "#A000F1"
+            7: {
+                rightTriangle: "#8500D3",
+                leftTriangle: "#FFFFFF",
+                square: "#A000F1"
             }
         }
         return palette[id] || palette[1]
     }
-    drawBlock(x,y,id){
+    drawBlock(x, y, id) {
         const margin = this.cellSize / 8;
         const palette = this.getColorPalette(id);
 
         this.drawTriangle(
-            x,y,
-            x+this.cellSize,y,
-            x,y+this.cellSize,
+            x, y,
+            x + this.cellSize, y,
+            x, y + this.cellSize,
             palette.leftTriangle
         );
 
         this.drawTriangle(
-            x+this.cellSize,y,
-            x+this.cellSize, y+this.cellSize,
-            x, y+this.cellSize,
+            x + this.cellSize, y,
+            x + this.cellSize, y + this.cellSize,
+            x, y + this.cellSize,
             palette.rightTriangle
         );
 
         this.drawSquare(
-            x+margin,
-            y+margin,
-            this.cellSize - (margin*2),
+            x + margin,
+            y + margin,
+            this.cellSize - (margin * 2),
             palette.square
         );
     }
-    currentShape(){
+    currentShape() {
         return this.shapes[this.rotation];
     }
-    draw(grid){
+    draw(grid) {
         const shape = this.currentShape();
-        for(let i = 0; i<shape.length; i++){
+        for (let i = 0; i < shape.length; i++) {
             const position = grid.getCoordinates(
                 this.position.column + shape[i].column,
-                this.position.row + shape [i].row
+                this.position.row + shape[i].row
             );
-            this.drawBlock(position.x,position.y,this.id);
+            this.drawBlock(position.x, position.y, this.id);
         }
     }
-    currentPositions(){
+    currentPositions() {
         const positions = [];
         const shape = this.currentShape();
-        for(let i=0; i<shape.length; i++){
+        for (let i = 0; i < shape.length; i++) {
             positions.push(new Position(
                 this.position.row + shape[i].row,
                 this.position.column + shape[i].column
@@ -117,83 +117,118 @@ class Tetromino{
         }
         return positions;
     }
-    move(row, column){
+    move(row, column) {
         this.position.row += row;
         this.position.column += column;
     }
-    reset(){
+    reset() {
         this.rotation = 0;
         this.position = new Position(this.initPosition.row, this.initPosition.column);
     }
 }
-const TetrominioTypes = {
-    T:{
-        id:1,
-        initPosition: new Position(0,3),
+const TetrominoTypes = {
+    T: {
+        id: 1,
+        initPosition: new Position(0, 3),
         shapes: [
-            [new Position(0,1), new Position(1,0), new Position(1,1), new Position(1,2)],
-            [new Position(0,1), new Position(1,1), new Position(1,2), new Position(2,1)],
-            [new Position(1,1), new Position(1,1), new Position(1,2), new Position(2,1)],
-            [new Position(0,1), new Position(1,0), new Position(1,1), new Position(2,1)],
+            [new Position(0, 1), new Position(1, 0), new Position(1, 1), new Position(1, 2)],
+            [new Position(0, 1), new Position(1, 1), new Position(1, 2), new Position(2, 1)],
+            [new Position(1, 0), new Position(1, 1), new Position(1, 2), new Position(2, 1)],
+            [new Position(0, 1), new Position(1, 0), new Position(1, 1), new Position(2, 1)],
         ]
     },
-    o: {
+    O: {
         id: 2,
-        initPosition: new Position(0,4),
+        initPosition: new Position(0, 4),
         shapes: [
-            [new Position(0,0), new Position(0,1), new Position(1,0), new Position(1,1 )],
+            [new Position(0, 0), new Position(0, 1), new Position(1, 0), new Position(1, 1)],
         ]
     },
     I: {
-        id:3,
-        initPosition: new Position(-1,3),
+        id: 3,
+        initPosition: new Position(-1, 3),
         shapes: [
-            [new Position(1,0), new Position(1,1), new Position(1,2), new Position(1,3)],
-            [new Position(0,2), new Position(1,2), new Position(2,2), new Position(3,2)],
-            [new Position(2,0), new Position(2,1), new Position(2,2), new Position(2,3)],
-            [new Position(0,1), new Position(1,1), new Position(2,1), new Position(3,1)],
+            [new Position(1, 0), new Position(1, 1), new Position(1, 2), new Position(1, 3)],
+            [new Position(0, 2), new Position(1, 2), new Position(2, 2), new Position(3, 2)],
+            [new Position(2, 0), new Position(2, 1), new Position(2, 2), new Position(2, 3)],
+            [new Position(0, 1), new Position(1, 1), new Position(2, 1), new Position(3, 1)],
         ]
     },
     S: {
-        id:4,
-        initPosition: new Position(0,3),
+        id: 4,
+        initPosition: new Position(0, 3),
         shapes: [
-            [new Position(0,1), new Position(0,2), new Position(1,0), new Position(1,1)],
-            [new Position(0,1), new Position(1,1), new Position(1,2), new Position(2,2)],
-            [new Position(1,1), new Position(1,2), new Position(2,0), new Position(2,1)],
-            [new Position(0,0), new Position(1,0), new Position(1,1), new Position(2,1)],
+            [new Position(0, 1), new Position(0, 2), new Position(1, 0), new Position(1, 1)],
+            [new Position(0, 1), new Position(1, 1), new Position(1, 2), new Position(2, 2)],
+            [new Position(1, 1), new Position(1, 2), new Position(2, 0), new Position(2, 1)],
+            [new Position(0, 0), new Position(1, 0), new Position(1, 1), new Position(2, 1)],
         ]
     },
     Z: {
-        id:5,
-        initPosition: new Position(0,3),
+        id: 5,
+        initPosition: new Position(0, 3),
         shapes: [
-            [new Position(0,0), new Position(0,1), new Position(1,1), new Position(1,2)],
-            [new Position(0,2), new Position(1,1), new Position(1,2), new Position(2,1)],
-            [new Position(1,0), new Position(1,1), new Position(2,1), new Position(2,2)],
-            [new Position(0,1), new Position(1,0), new Position(1,1), new Position(2,0)],
+            [new Position(0, 0), new Position(0, 1), new Position(1, 1), new Position(1, 2)],
+            [new Position(0, 2), new Position(1, 1), new Position(1, 2), new Position(2, 1)],
+            [new Position(1, 0), new Position(1, 1), new Position(2, 1), new Position(2, 2)],
+            [new Position(0, 1), new Position(1, 0), new Position(1, 1), new Position(2, 0)],
         ]
     },
     J: {
-        id:6,
-        initPosition: new Position(0,3),
+        id: 6,
+        initPosition: new Position(0, 3),
         shapes: [
-            [new Position(0,0), new Position(1,0), new Position(1,1), new Position(1,2)],
-            [new Position(0,1), new Position(0,2), new Position(1,1), new Position(2,1)],
-            [new Position(1,0), new Position(1,1), new Position(1,2), new Position(2,2)],
-            [new Position(0,1), new Position(1,1), new Position(2,0), new Position(2,1)],
+            [new Position(0, 0), new Position(1, 0), new Position(1, 1), new Position(1, 2)],
+            [new Position(0, 1), new Position(0, 2), new Position(1, 1), new Position(2, 1)],
+            [new Position(1, 0), new Position(1, 1), new Position(1, 2), new Position(2, 2)],
+            [new Position(0, 1), new Position(1, 1), new Position(2, 0), new Position(2, 1)],
         ]
     },
-    L:{
-        id:7,
-        initPosition: new Position(0,3),
+    L: {
+        id: 7,
+        initPosition: new Position(0, 3),
         shapes: [
-            [new Position(0,2), new Position(1,0), new Position(1,1), new Position(1,2)],
-            [new Position(0,1), new Position(1,1), new Position(2,1), new Position(2,2)],
-            [new Position(1,0), new Position(1,1), new Position(1,2), new Position(2,0)],
-            [new Position(0,0), new Position(0,1), new Position(1,1), new Position(2,1)],
+            [new Position(0, 2), new Position(1, 0), new Position(1, 1), new Position(1, 2)],
+            [new Position(0, 1), new Position(1, 1), new Position(2, 1), new Position(2, 2)],
+            [new Position(1, 0), new Position(1, 1), new Position(1, 2), new Position(2, 0)],
+            [new Position(0, 0), new Position(0, 1), new Position(1, 1), new Position(2, 1)],
         ]
     },
 }
 
-export{Position, Tetromino,  TetrominioTypes}
+class TetrominoBag {
+    constructor(canvas, cellSize) {
+        this.canvas = canvas;
+        this.cellSize = cellSize;
+        this.bag = []
+    }
+    fillBag() {
+        const tetrominosTypes = [
+            TetrominoTypes.T,
+            TetrominoTypes.O,
+            TetrominoTypes.I,
+            TetrominoTypes.S,
+            TetrominoTypes.Z,
+            TetrominoTypes.J,
+            TetrominoTypes.L,
+        ]
+        this.bag.length = 0;
+        tetrominosTypes.forEach((type)=>{
+            this.bag.push(new Tetromino(
+                this.canvas,this.cellSize,type.shapes,type.initPosition,type.id
+            ));
+        });
+        for(let i = this.bag.length - 1; i>0; i--){
+            let j = Math.floor(Math.random() * (i+1));
+            [this.bag[i], this.bag[j]] = [this.bag[j],this.bag[i]]
+        }
+    }
+    nextTetromino(){
+        if(this.bag.length === 0){
+            this.fillBag();
+        }
+        return this.bag.pop();
+    }
+}
+
+export { Position, Tetromino, TetrominoTypes, TetrominoBag}
