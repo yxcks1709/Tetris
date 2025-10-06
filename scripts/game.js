@@ -1,8 +1,8 @@
-import { BoardTetris } from '/scripts/boardTetris.js'
+import { BoardTetris, BoardNext, BoardHold } from '/scripts/boardTetris.js'
 import { TetrominoBag } from '/scripts/tetromino.js';
 
 export class Game {
-    constructor(canvas, rows, cols, cellSize, space) {
+    constructor(canvas, rows, cols, cellSize, space, canvasNext, canvasHold) {
         this.boardTetris = new BoardTetris(canvas, rows, cols, cellSize, space);
         this.tetrominioBag = new TetrominoBag(canvas, cellSize);
         this.currentTetromino = this.tetrominioBag.nextTetromino();
@@ -11,6 +11,14 @@ export class Game {
 
         this.lastTime = 0;
         this.lastTime2 = 0;
+
+        this.next = new BoardNext(canvasNext, 8, 4, cellSize, space, this.tetrominioBag.getThreeNextTetrominos());
+        this.next.updateMatriz();
+        this.hold = new BoardHold(canvasHold, 2, 4, cellSize, space);
+        this.canHold = true;
+
+        this.score = 0;
+        this.gameOver = false;
     }
     update() {
         let currentTime = Date.now();
@@ -22,8 +30,13 @@ export class Game {
         }
         if (deltaTime2 >= 50) {
             this.boardTetris.draw();
+            this.drawTetrominoGhost();
             this.currentTetromino.draw(this.boardTetris);
-            if(this.keys.down){
+
+            this.next.draw2();
+            this.hold.draw2();
+
+            if (this.keys.down) {
                 this.moveTetrominoDown();
             }
             this.lastTime2 = currentTime;
@@ -67,7 +80,7 @@ export class Game {
     rotationTetrominoCW() {
         this.currentTetromino.rotation++;
         if (this.currentTetromino.rotation > this.currentTetromino.shapes.length - 1) {
-            this.currentTetromino.rotation= 0;
+            this.currentTetromino.rotation = 0;
         }
         if (this.blockedTetromino()) {
             this.rotationTetrominoCCW();
@@ -82,20 +95,82 @@ export class Game {
             this.rotationTetrominoCW
         }
     }
-    placeTetromino(){
+    placeTetromino() {
         const tetrominoPositions = this.currentTetromino.currentPositions();
-        for(let i = 0; i < tetrominoPositions.length; i++){
+        for (let i = 0; i < tetrominoPositions.length; i++) {
             this.boardTetris.matriz
-                    [tetrominoPositions[i].row]
-                    [tetrominoPositions[i].column] = this.currentTetromino.id;
+            [tetrominoPositions[i].row]
+            [tetrominoPositions[i].column] = this.currentTetromino.id;
         }
-        this.boardTetris.clearFullRows();
+        this.score += this.boardTetris.clearFullRows() * 100;
 
-        if(this.boardTetris.gameOver()){
+        if (this.boardTetris.gameOver()) {
+            setTimeout(() => {
+                this.gameOver = true;
+            }, 500);
             return true;
-        }else{
+        } else {
             this.currentTetromino = this.tetrominioBag.nextTetromino();
+            this.next.listTetrominos = this.tetrominioBag.getThreeNextTetrominos();
+            this.next.updateMatriz();
+            this.canHold = true;
         }
+    }
+    dropDistance(positon) {
+        let distance = 0
+        while (this.boardTetris.isEmpty(positon.row + distance + 1, positon.column)) {
+            distance++;
+        }
+        return distance;
+    }
+    tetrominioDropDistance() {
+        let drop = this.boardTetris.rows;
+        const tetrominoPositions = this.currentTetromino.currentPositions();
+        for (let i = 0; i < tetrominoPositions.length; i++) {
+            drop = Math.min(drop, this.dropDistance(tetrominoPositions[i]))
+        }
+        return drop;
+    }
+    drawTetrominoGhost() {
+        const dropDistance = this.tetrominioDropDistance();
+        const tetrominoPositions = this.currentTetromino.currentPositions();
+        for (let i = 0; i < tetrominoPositions.length; i++) {
+            let positon = this.boardTetris.getCoordinates(
+                tetrominoPositions[i].column,
+                tetrominoPositions[i].row + dropDistance
+            );
+            this.boardTetris.drawSquere(positon.x, positon.y, this.boardTetris.cellSize, "#000", "white", 20)
+        }
+    }
+    dropBlock() {
+        this.currentTetromino.move(this.tetrominioDropDistance(), 0);
+        this.placeTetromino();
+    }
+    holdTetronimo() {
+        if (!this.canHold) return;
+        if (this.hold.tetromino === null) {
+            this.hold.tetromino = this.currentTetromino;
+            this.currentTetromino = this.tetrominioBag.nextTetromino();
+        } else {
+            [this.currentTetromino, this.hold.tetromino] = [this.hold.tetromino, this.currentTetromino]
+        }
+        this.hold.updateMatriz();
+        this.canHold = false;
+    }
+    reset() {
+        this.gameOver = false;
+        this.boardTetris.restartMatriz();
+        this.score = 0;
+        this.hold.tetromino = null;
+        this.tetromino.reset();
+        this.currentTetromino = this.tetrominioBag.nextTetromino();
+
+        this.canHold = true;
+        this.hold.restartMatriz();
+        this.next.restartMatriz();
+        this.next.listTetrominos = this.tetrominioBag.getThreeNextTetrominos();
+        this.next.updateMatriz();
+        this.next.draw2();
     }
     keyboard() {
         window.addEventListener("keydown", (evt) => {
@@ -112,7 +187,15 @@ export class Game {
             if (evt.key === "ArrowDown") {
                 this.keys.down = true;
             }
+            if (evt.key === "c" || evt.key === "C") {
+                this.holdTetronimo();
+            }
+            if (evt.code === "Space") { 
+                evt.preventDefault();     
+                this.dropBlock();         
+            }
         });
+
         window.addEventListener("keyup", (evt) => {
             if (evt.key === "ArrowUp") {
                 this.keys.up = false;
@@ -123,3 +206,4 @@ export class Game {
         });
     }
 }
+

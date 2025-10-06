@@ -5,7 +5,7 @@ class Position {
     }
 }
 class Tetromino {
-    constructor(canvas, cellSize, shapes = [], initPosition = new Position(), id=1) {
+    constructor(canvas, cellSize, shapes = [], initPosition = new Position(), id = 1) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.cellSize = cellSize;
@@ -201,6 +201,13 @@ class TetrominoBag {
         this.canvas = canvas;
         this.cellSize = cellSize;
         this.bag = []
+        this.threeNextTetrominos = [];
+        this.init();
+    }
+    init() {
+        for (let i = 0; i < 3; i++) {
+            this.threeNextTetrominos.push(this.getNextTetromino());
+        }
     }
     fillBag() {
         const tetrominosTypes = [
@@ -213,22 +220,35 @@ class TetrominoBag {
             TetrominoTypes.L,
         ]
         this.bag.length = 0;
-        tetrominosTypes.forEach((type)=>{
+        tetrominosTypes.forEach((type) => {
             this.bag.push(new Tetromino(
-                this.canvas,this.cellSize,type.shapes,type.initPosition,type.id
+                this.canvas, this.cellSize, type.shapes, type.initPosition, type.id
             ));
         });
-        for(let i = this.bag.length - 1; i>0; i--){
-            let j = Math.floor(Math.random() * (i+1));
-            [this.bag[i], this.bag[j]] = [this.bag[j],this.bag[i]]
+        for (let i = this.bag.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]]
         }
     }
-    nextTetromino(){
-        if(this.bag.length === 0){
+    getNextTetromino() {
+        if (this.bag.length === 0) {
             this.fillBag();
         }
         return this.bag.pop();
     }
+    nextTetromino() {
+        const next = this.threeNextTetrominos.shift();
+        this.threeNextTetrominos.push(this.getNextTetromino());
+        return next;
+    }
+    getThreeNextTetrominos() {
+        return this.threeNextTetrominos;
+    }
+    reset() {
+        this.bag = [];
+        this.threeNextTetrominos = [];
+        this.init();
+    }
 }
 
-export { Position, Tetromino, TetrominoTypes, TetrominoBag}
+export { Position, Tetromino, TetrominoTypes, TetrominoBag }
